@@ -1696,7 +1696,11 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return ConversationHandler.END
 
 def main():
-    application = Application.builder().token(BOT_TOKEN).build()
+    # Print a startup message
+    print("🚀 Starting Crypto Store Bot...")
+
+    # Initialize application WITHOUT Updater (fixes the crash)
+    application = Application.builder().token(BOT_TOKEN).updater(None).build()
     
     # Conversation handlers - DEFINE THEM FIRST
     checkout_conv = ConversationHandler(
