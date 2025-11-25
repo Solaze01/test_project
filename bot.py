@@ -1696,13 +1696,12 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return ConversationHandler.END
 
 def main():
-    # Print a startup message
     print("🚀 Starting Crypto Store Bot...")
 
-    # Initialize application WITHOUT Updater (fixes the crash)
-    application = Application.builder().token(BOT_TOKEN).updater(None).build()
-    
-    # Conversation handlers - DEFINE THEM FIRST
+    # Initialize application WITH Updater
+    application = Application.builder().token(BOT_TOKEN).build()
+
+    # Conversation handlers
     checkout_conv = ConversationHandler(
         entry_points=[CallbackQueryHandler(checkout_start, pattern="^checkout_start$")],
         states={
@@ -1711,9 +1710,9 @@ def main():
             States.CHECKOUT_ADDRESS: [MessageHandler(filters.TEXT & ~filters.COMMAND, checkout_address)],
         },
         fallbacks=[CommandHandler("cancel", cancel)],
-        per_message=False  # Add this to fix the warning
+        per_message=False
     )
-    
+
     admin_add_product_conv = ConversationHandler(
         entry_points=[CallbackQueryHandler(admin_add_product_start, pattern="^admin_add_product$")],
         states={
@@ -1723,18 +1722,17 @@ def main():
             States.ADMIN_ADD_PRODUCT_CATEGORY: [
                 CallbackQueryHandler(admin_add_product_category, pattern="^admin_cat_|admin_new_category$"),
                 MessageHandler(filters.TEXT & ~filters.COMMAND, admin_add_product_category_text)
-                ],
+            ],
             States.ADMIN_ADD_PRODUCT_BRAND: [
                 CallbackQueryHandler(admin_add_product_brand, pattern="^admin_brand_|admin_new_brand$"),
                 MessageHandler(filters.TEXT & ~filters.COMMAND, admin_add_product_brand_text)
-                ],
+            ],
             States.ADMIN_ADD_PRODUCT_IMAGE: [MessageHandler(filters.PHOTO | filters.TEXT, admin_add_product_image)],
         },
         fallbacks=[CommandHandler("cancel", cancel)],
-        per_message=False  # Add this to fix the warning
+        per_message=False
     )
 
-    # NEW: Broadcast conversation handler
     admin_broadcast_conv = ConversationHandler(
         entry_points=[CallbackQueryHandler(admin_broadcast_start, pattern="^admin_broadcast$")],
         states={
@@ -1745,8 +1743,7 @@ def main():
         fallbacks=[CommandHandler("cancel", cancel)],
         per_message=False
     )
-    
-    # NEW: Product editing conversation handler - DEFINE IT BEFORE USING
+
     admin_edit_product_conv = ConversationHandler(
         entry_points=[CallbackQueryHandler(admin_edit_field_select, pattern="^admin_edit_field_")],
         states={
@@ -1755,17 +1752,17 @@ def main():
             ],
         },
         fallbacks=[CommandHandler("cancel", cancel)],
-        per_message=False  # Add this to fix the warning
+        per_message=False
     )
-    
+
     # Add handlers
     application.add_handler(CommandHandler("start", start))
     application.add_handler(checkout_conv)
     application.add_handler(admin_add_product_conv)
-    application.add_handler(admin_broadcast_conv) 
-    application.add_handler(admin_edit_product_conv)  # NOW THIS WILL WORK
-    
-    # Callback query handlers - FIXED ORDER
+    application.add_handler(admin_broadcast_conv)
+    application.add_handler(admin_edit_product_conv)
+
+    # Callback query handlers
     application.add_handler(CallbackQueryHandler(browse_categories, pattern="^browse_categories$"))
     application.add_handler(CallbackQueryHandler(show_products, pattern="^category_"))
     application.add_handler(CallbackQueryHandler(show_product_detail, pattern="^product_"))
@@ -1777,8 +1774,8 @@ def main():
     application.add_handler(CallbackQueryHandler(process_payment, pattern="^payment_"))
     application.add_handler(CallbackQueryHandler(my_orders, pattern="^my_orders$"))
     application.add_handler(CallbackQueryHandler(admin_panel, pattern="^admin_panel$"))
-    
-    # NEW PRODUCT MANAGEMENT HANDLERS
+
+    # Product management handlers
     application.add_handler(CallbackQueryHandler(admin_manage_products, pattern="^admin_manage_products$"))
     application.add_handler(CallbackQueryHandler(admin_view_products, pattern="^admin_view_products$"))
     application.add_handler(CallbackQueryHandler(admin_edit_products, pattern="^admin_edit_products$"))
@@ -1786,21 +1783,19 @@ def main():
     application.add_handler(CallbackQueryHandler(admin_toggle_product_status, pattern="^admin_toggle_"))
     application.add_handler(CallbackQueryHandler(admin_delete_product_confirm, pattern="^admin_delete_[0-9]+$"))
     application.add_handler(CallbackQueryHandler(admin_delete_product, pattern="^admin_delete_confirm$"))
-    
-    # FIXED: Add order status handlers BEFORE the general view orders handler
+
     application.add_handler(CallbackQueryHandler(admin_view_orders_by_status, pattern="^admin_orders_"))
     application.add_handler(CallbackQueryHandler(admin_update_order_status, pattern="^admin_(paid|shipped|completed|cancelled)_"))
     application.add_handler(CallbackQueryHandler(admin_contact_customer, pattern="^admin_contact_"))
     application.add_handler(CallbackQueryHandler(admin_view_orders, pattern="^admin_view_orders$"))
     application.add_handler(CallbackQueryHandler(admin_broadcast_confirm, pattern="^broadcast_confirm$"))
     application.add_handler(CallbackQueryHandler(admin_broadcast_cancel, pattern="^broadcast_cancel$"))
-    
+
     application.add_handler(CallbackQueryHandler(back_to_main, pattern="^back_to_main$"))
 
-    # Start the bot
     print("🤖 Bot is running...")
     application.run_polling()
 
-if __name__ == "__main__":
 
+if __name__ == "__main__":
     main()
