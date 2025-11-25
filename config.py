@@ -3,7 +3,9 @@ from datetime import datetime
 
 # Bot Configuration (Pulled from Render Environment Variables)
 BOT_TOKEN = os.getenv("BOT_TOKEN", "")
-ADMIN_IDS = os.getenv("ADMIN_IDS", "")  # You can pass comma-separated IDs
+# Admins: convert comma-separated ENV string into a list of integers
+_admin_ids_raw = os.getenv("ADMIN_IDS", "")
+ADMIN_IDS = [int(x.strip()) for x in _admin_ids_raw.split(",") if x.strip().isdigit()]
 
 # Payment
 BTC_WALLET_ADDRESS = os.getenv("BTC_WALLET", "")
